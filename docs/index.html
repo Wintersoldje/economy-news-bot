@@ -2,42 +2,38 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Script/Render MVP</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Economy News Bot</title>
+  <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-  <main class="container">
-    <h1>Script/Render MVP</h1>
+  <main class="wrap">
+    <h1>Economy News Bot</h1>
+    <p class="sub">버튼을 누르면 아래 로그가 변해야 정상입니다.</p>
 
-    <section class="panel">
-      <h2>대본</h2>
-      <div class="buttons">
-        <button id="btn-script-short">숏츠 대본 보기</button>
-        <button id="btn-script-long">롱폼 대본 보기</button>
-      </div>
-      <pre id="script-output" class="output" aria-label="script output"></pre>
-      <a id="script-download" class="download" href="#" download style="display:none;">대본 다운로드</a>
+    <section class="btns">
+      <button id="btnShortScript">1. 숏츠 대본 보기</button>
+      <button id="btnLongScript">2. 롱폼 대본 보기</button>
+      <button id="btnShortVideo">3. 숏츠 영상 만들기</button>
+      <button id="btnLongVideo">4. 롱폼 영상 만들기</button>
     </section>
 
     <section class="panel">
-      <h2>영상</h2>
-      <div class="buttons">
-        <button id="btn-render-short">숏츠 영상 만들기</button>
-        <button id="btn-render-long">롱폼 영상 만들기</button>
+      <div class="row">
+        <strong>상태</strong>
+        <span id="status">대기 중</span>
       </div>
-      <div id="render-status" class="status"></div>
-      <a id="video-download" class="download" href="#" download style="display:none;">영상 다운로드</a>
-    </section>
 
-    <section class="panel small">
-      <h2>설정</h2>
-      <p class="muted">
-        API_BASE는 <code>app.js</code> 상단에서 변경하세요. (예: Cloud Run URL)
-      </p>
+      <div class="row">
+        <strong>다운로드</strong>
+        <a id="downloadLink" href="#" target="_blank" rel="noreferrer" style="pointer-events:none;opacity:.5;">(아직 없음)</a>
+      </div>
+
+      <textarea id="output" rows="18" placeholder="여기에 대본/로그가 표시됩니다."></textarea>
     </section>
   </main>
 
-  <script src="app.js"></script>
+  <!-- 중요: defer 꼭 있어야 로딩 순서 문제 줄어듦 -->
+  <script src="./app.js" defer></script>
 </body>
 </html>
