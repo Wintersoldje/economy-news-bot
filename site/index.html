@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Script/Render MVP</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="container">
+    <h1>Script/Render MVP</h1>
+
+    <section class="panel">
+      <h2>대본</h2>
+      <div class="buttons">
+        <button id="btn-script-short">숏츠 대본 보기</button>
+        <button id="btn-script-long">롱폼 대본 보기</button>
+      </div>
+      <pre id="script-output" class="output" aria-label="script output"></pre>
+      <a id="script-download" class="download" href="#" download style="display:none;">대본 다운로드</a>
+    </section>
+
+    <section class="panel">
+      <h2>영상</h2>
+      <div class="buttons">
+        <button id="btn-render-short">숏츠 영상 만들기</button>
+        <button id="btn-render-long">롱폼 영상 만들기</button>
+      </div>
+      <div id="render-status" class="status"></div>
+      <a id="video-download" class="download" href="#" download style="display:none;">영상 다운로드</a>
+    </section>
+
+    <section class="panel small">
+      <h2>설정</h2>
+      <p class="muted">
+        API_BASE는 <code>app.js</code> 상단에서 변경하세요. (예: Cloud Run URL)
+      </p>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
