@@ -195,7 +195,7 @@ def render_video(payload=Body(...)):
         "ffmpeg", "-y",
         "-f", "lavfi", "-i", f"color=c=black:s=1080x1920:r=30:d={dur}",
         "-i", mp3_path,
-        "-vf", f"subtitles={srt_path}",
+        "-vf", f"subtitles={srt_path}:force_style='FontName=/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc,FontSize=64,Outline=2,Shadow=1'",
         "-c:v", "libx264", "-pix_fmt", "yuv420p",
         "-c:a", "aac", "-b:a", "192k",
         "-shortest",
