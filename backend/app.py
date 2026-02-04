@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
 
 from openai import OpenAI
-from .news import fetch_news
+from news import fetch_news
 
 app = FastAPI()
 
