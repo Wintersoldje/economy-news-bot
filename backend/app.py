@@ -97,7 +97,7 @@ def ffprobe_duration(path: str) -> float:
         raise RuntimeError(p.stderr[-2000:])
     return float(p.stdout.strip())
 
-def run_edge_tts(text: str, out_mp3: str, voice: str = "ko-KR-SunHiNeural", rate: str = "+0%"):
+def run_edge_tts(text: str, out_mp3: str, voice: str = "ko-KR-SunHiNeural", rate: str = "+20%"):
     cmd = [
         "edge-tts",
         "--voice", voice,
@@ -201,17 +201,19 @@ def render_video(payload=Body(...)):
     sentences = split_sentences_kor(tts_text)
     with open(srt_path, "w", encoding="utf-8") as f:
         f.write(make_srt(sentences, dur))
-
+    bg_path = base + "_bg.jpg"
+    download_bg_image("finance,stock,market,korea", bg_path)
+    
     # 4) 영상 (단색 배경 + 자막 + 오디오)
     cmd = [
-        "ffmpeg", "-y",
-        "-f", "lavfi", "-i", f"color=c=black:s=1080x1920:r=30:d={dur}",
-        "-i", mp3_path,
-        "-vf", f"subtitles={srt_path}:force_style='FontName=/usr/share/fonts/truetype/noto/NotoSansCJK-Regular.ttc,FontSize=64,Outline=2,Shadow=1'",
-        "-c:v", "libx264", "-pix_fmt", "yuv420p",
-        "-c:a", "aac", "-b:a", "192k",
-        "-shortest",
-        mp4_path
+      "ffmpeg", "-y",
+      "-loop", "1", "-i", bg_path,   # ✅ 사진 배경
+      "-i", mp3_path,
+      "-vf", vf,
+      "-c:v", "libx264", "-pix_fmt", "yuv420p",
+      "-c:a", "aac", "-b:a", "192k",
+      "-shortest",
+      mp4_path
     ]
     p = subprocess.run(cmd, capture_output=True, text=True)
     if p.returncode != 0:
