@@ -1,6 +1,6 @@
 // ✅ 여기만 나중에 Cloud Run URL로 바꾸면 됨 (https://... 형태)
 // 예: const API_BASE = "https://your-cloud-run-url";
-const API_BASE = ""; // 지금은 빈 값이면 "데모 모드"로 동작하게 해둠
+const API_BASE = "https://economy-news-bot-924911799522.asia-northeast3.run.app"; // 지금은 빈 값이면 "데모 모드"로 동작하게 해둠
 
 const $ = (id) => document.getElementById(id);
 
