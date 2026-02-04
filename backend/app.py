@@ -6,6 +6,10 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from openai import OpenAI
 from news import fetch_news  # backend/news.py
+import requests
+
+
+
 
 app = FastAPI()
 
@@ -31,6 +35,14 @@ _EMOJI_RE = re.compile(
     "\U00002600-\U000026FF" "]+",
     flags=re.UNICODE,
 )
+
+def download_bg_image(query: str, out_path: str) -> None:
+    # 키 없이 사용 가능한 소스 이미지(간단/무료). 과도 호출은 피하기(캐시 권장).
+    url = f"https://source.unsplash.com/1080x1920/?{requests.utils.quote(query)}"
+    r = requests.get(url, timeout=20)
+    r.raise_for_status()
+    with open(out_path, "wb") as f:
+        f.write(r.content)
 
 def tts_clean(text: str) -> str:
     if not text:
