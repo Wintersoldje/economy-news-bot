@@ -77,34 +77,34 @@ async function handleRender(type) {
   try {
     setStatus("렌더 요청...");
     setDownload("", "");
-    const start = await apiPost("/api/render", { type });
-    const jobId = start.job_id;
-    if (!jobId) throw new Error("job_id가 없습니다.");
+    setOutput("");
 
-    setStatus(`렌더 중... (job_id=${jobId})`);
-    setOutput(`job_id=${jobId}\n진행 상황을 확인 중...\n`);
+    if (!API_BASE) throw new Error("API_BASE가 비어있습니다. Cloud Run URL을 넣어주세요.");
 
-    // 폴링
-    for (let i = 0; i < 60; i++) { // 최대 60회 (대충 2~5분)
-      await new Promise(r => setTimeout(r, 3000));
-      const st = await apiGet(`/api/render/status?job_id=${encodeURIComponent(jobId)}`);
-      if (st.status === "done") {
-        setStatus("완료");
-        setOutput(JSON.stringify(st, null, 2));
-        setDownload(st.video_url || "", "영상 다운로드");
-        return;
-      }
-      if (st.status === "error") {
-        throw new Error(st.message || "렌더 실패");
-      }
-      setStatus(`렌더 중... ${st.message || ""}`.trim());
+    const res = await fetch(API_BASE + "/api/render", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ type }),
+    });
+
+    if (!res.ok) {
+      const t = await res.text();
+      throw new Error(`HTTP ${res.status}: ${t}`);
     }
-    throw new Error("시간 초과: 렌더가 너무 오래 걸립니다.");
+
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+
+    setStatus("완료");
+    setOutput("영상이 생성되었습니다. 아래 다운로드 링크를 누르세요.");
+    setDownload(url, "영상 다운로드");
   } catch (e) {
-    logDemo(`${type.toUpperCase()} 영상 만들기`);
-    setOutput((e && e.message ? e.message : String(e)) + "\n\n" + $("output").value);
+    setStatus("❌ 오류");
+    setOutput(e?.message || String(e));
+    setDownload("", "");
   }
 }
+
 
 function bind() {
   const shortS = $("btnShortScript");
