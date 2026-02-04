@@ -2,7 +2,10 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
-# backend 폴더만 복사해서 이미지에 포함
+RUN apt-get update && apt-get install -y --no-install-recommends \
+  ffmpeg fonts-dejavu-core \
+  && rm -rf /var/lib/apt/lists/*
+
 COPY backend/requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
