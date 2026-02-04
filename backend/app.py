@@ -36,13 +36,17 @@ _EMOJI_RE = re.compile(
     flags=re.UNICODE,
 )
 
-def download_bg_image(query: str, out_path: str) -> None:
-    # 키 없이 사용 가능한 소스 이미지(간단/무료). 과도 호출은 피하기(캐시 권장).
-    url = f"https://source.unsplash.com/1080x1920/?{requests.utils.quote(query)}"
-    r = requests.get(url, timeout=20)
-    r.raise_for_status()
-    with open(out_path, "wb") as f:
-        f.write(r.content)
+def download_bg_image(query: str, out_path: str) -> bool:
+    try:
+        url = f"https://source.unsplash.com/1080x1920/?{requests.utils.quote(query)}"
+        r = requests.get(url, timeout=15)
+        r.raise_for_status()
+        with open(out_path, "wb") as f:
+            f.write(r.content)
+        return True
+    except Exception as e:
+        print("⚠️ bg image download failed:", repr(e))
+        return False
 
 def tts_clean(text: str) -> str:
     if not text:
@@ -203,18 +207,31 @@ def render_video(payload=Body(...)):
         f.write(make_srt(sentences, dur))
     bg_path = base + "_bg.jpg"
     download_bg_image("finance,stock,market,korea", bg_path)
-    
+    bg_ok = download_bg_image("finance,stock,market,korea", bg_path)
     # 4) 영상 (단색 배경 + 자막 + 오디오)
+    vf = f"subtitles={srt_path}:force_style='FontName=Noto Sans CJK KR,FontSize=64,Outline=2,Shadow=1,Alignment=2'"
+
+if bg_ok:
     cmd = [
-      "ffmpeg", "-y",
-      "-loop", "1", "-i", bg_path,   # ✅ 사진 배경
-      "-i", mp3_path,
-      "-vf", vf,
-      "-c:v", "libx264", "-pix_fmt", "yuv420p",
-      "-c:a", "aac", "-b:a", "192k",
-      "-shortest",
-      mp4_path
+        "ffmpeg", "-y",
+        "-loop", "1", "-i", bg_path,
+        "-i", mp3_path,
+        "-vf", vf,
+        "-c:v", "libx264", "-pix_fmt", "yuv420p",
+        "-c:a", "aac", "-b:a", "192k",
+        "-shortest", mp4_path
     ]
+else:
+    cmd = [
+        "ffmpeg", "-y",
+        "-f", "lavfi", "-i", f"color=c=black:s=1080x1920:r=30:d={dur}",
+        "-i", mp3_path,
+        "-vf", vf,
+        "-c:v", "libx264", "-pix_fmt", "yuv420p",
+        "-c:a", "aac", "-b:a", "192k",
+        "-shortest", mp4_path
+    ]
+
     p = subprocess.run(cmd, capture_output=True, text=True)
     if p.returncode != 0:
         raise HTTPException(500, f"ffmpeg failed: {p.stderr[-1500:]}")
