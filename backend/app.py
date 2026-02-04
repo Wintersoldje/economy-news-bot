@@ -125,7 +125,6 @@ def generate_script(kind: str) -> str:
 - 첫 문장: 훅(숫자/놀라운 변화/내 돈 영향)
 - 본문: 4~6문장(왜 중요한지, 생활/시장 영향, 투자자 관점 1문장)
 - 마지막: CTA 1문장
-- 마지막 줄: 출처: 링크 (1개)
 
 {tts_rules}
 
@@ -143,7 +142,6 @@ def generate_script(kind: str) -> str:
 - 뉴스2 빠르게
 - 체크리스트 3개
 - 마무리 CTA
-- 마지막 줄: 출처: 링크1, 링크2
 
 {tts_rules}
 
