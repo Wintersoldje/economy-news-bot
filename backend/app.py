@@ -207,31 +207,30 @@ def render_video(payload=Body(...)):
     with open(srt_path, "w", encoding="utf-8") as f:
         f.write(make_srt(sentences, dur))
     bg_path = base + "_bg.jpg"
-    download_bg_image("finance,stock,market,korea", bg_path)
     bg_ok = download_bg_image("finance,stock,market,korea", bg_path)
     # 4) 영상 (단색 배경 + 자막 + 오디오)
     vf = f"subtitles={srt_path}:force_style='FontName=Noto Sans CJK KR,FontSize=64,Outline=2,Shadow=1,Alignment=2'"
 
-if bg_ok:
-    cmd = [
-        "ffmpeg", "-y",
-        "-loop", "1", "-i", bg_path,
-        "-i", mp3_path,
-        "-vf", vf,
-        "-c:v", "libx264", "-pix_fmt", "yuv420p",
-        "-c:a", "aac", "-b:a", "192k",
-        "-shortest", mp4_path
-    ]
-else:
-    cmd = [
-        "ffmpeg", "-y",
-        "-f", "lavfi", "-i", f"color=c=black:s=1080x1920:r=30:d={dur}",
-        "-i", mp3_path,
-        "-vf", vf,
-        "-c:v", "libx264", "-pix_fmt", "yuv420p",
-        "-c:a", "aac", "-b:a", "192k",
-        "-shortest", mp4_path
-    ]
+    if bg_ok:
+        cmd = [
+            "ffmpeg", "-y",
+            "-loop", "1", "-i", bg_path,
+            "-i", mp3_path,
+            "-vf", vf,
+            "-c:v", "libx264", "-pix_fmt", "yuv420p",
+            "-c:a", "aac", "-b:a", "192k",
+            "-shortest", mp4_path
+        ]
+    else:
+        cmd = [
+            "ffmpeg", "-y",
+            "-f", "lavfi", "-i", f"color=c=black:s=1080x1920:r=30:d={dur}",
+            "-i", mp3_path,
+            "-vf", vf,
+            "-c:v", "libx264", "-pix_fmt", "yuv420p",
+            "-c:a", "aac", "-b:a", "192k",
+            "-shortest", mp4_path
+        ]
 
     p = subprocess.run(cmd, capture_output=True, text=True)
     if p.returncode != 0:
