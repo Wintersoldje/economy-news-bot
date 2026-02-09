@@ -7,9 +7,10 @@ from fastapi.responses import FileResponse
 from openai import OpenAI
 from news import fetch_news  # backend/news.py
 import requests
+from bs4 import BeautifulSoup
+from urllib.parse import urljoin
 
-
-
+UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36"
 
 app = FastAPI()
 
@@ -36,6 +37,62 @@ _EMOJI_RE = re.compile(
     flags=re.UNICODE,
 )
 
+def extract_source_link(script: str) -> str | None:
+    m = re.search(r"출처:\s*(https?://\S+)", script)
+    return m.group(1).strip() if m else None
+
+def download_picsum_fallback(out_path: str) -> bool:
+    # 완전 최후의 fallback: 랜덤 배경이라도 영상은 만든다
+    try:
+        r = requests.get("https://picsum.photos/1080/1920", timeout=10, headers={"User-Agent": UA})
+        r.raise_for_status()
+        with open(out_path, "wb") as f:
+            f.write(r.content)
+        return True
+    except Exception as e:
+        print("⚠️ picsum fallback failed:", repr(e))
+        return False
+
+def download_image(url: str, out_path: str) -> bool:
+    try:
+        r = requests.get(url, timeout=15, headers={"User-Agent": UA})
+        r.raise_for_status()
+        with open(out_path, "wb") as f:
+            f.write(r.content)
+        return True
+    except Exception as e:
+        print("⚠️ download_image failed:", repr(e))
+        return False
+
+def get_og_image(article_url: str) -> str | None:
+    """
+    기사 URL에서 대표 이미지(og:image 또는 twitter:image)를 찾음.
+    실패하면 None.
+    """
+    try:
+        r = requests.get(article_url, timeout=10, headers={"User-Agent": UA})
+        r.raise_for_status()
+        soup = BeautifulSoup(r.text, "lxml")
+
+        # 1) og:image
+        tag = soup.select_one('meta[property="og:image"]')
+        if tag and tag.get("content"):
+            return urljoin(article_url, tag["content"].strip())
+
+        # 2) twitter:image
+        tag = soup.select_one('meta[name="twitter:image"]')
+        if tag and tag.get("content"):
+            return urljoin(article_url, tag["content"].strip())
+
+        # 3) 그래도 없으면 본문 첫 이미지라도
+        img = soup.select_one("article img, .article img, img")
+        if img and img.get("src"):
+            return urljoin(article_url, img["src"].strip())
+
+        return None
+    except Exception as e:
+        print("⚠️ get_og_image failed:", repr(e))
+        return None
 
 def download_bg_image(query: str, out_path: str) -> bool:
     try:
@@ -186,6 +243,20 @@ def render_video(payload=Body(...)):
 
     # 1) 스크립트 생성
     script = generate_script(kind)
+
+    bg_path = base + "_bg.jpg"
+
+    source_link = extract_source_link(script)
+    bg_ok = False
+
+    if source_link:
+        img_url = get_og_image(source_link)
+        if img_url:
+            bg_ok = download_image(img_url, bg_path)
+
+    # 실패하면 fallback
+    if not bg_ok:
+        bg_ok = download_picsum_fallback(bg_path)
 
     # 롱폼은 MVP로 앞부분만(너무 길면 TTS/렌더 오래 걸림)
     tts_text = script
