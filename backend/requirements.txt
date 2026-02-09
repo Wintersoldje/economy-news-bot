@@ -4,3 +4,5 @@ feedparser
 openai==1.*
 edge-tts
 requests
+beautifulsoup4
+lxml
