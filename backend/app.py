@@ -36,6 +36,7 @@ _EMOJI_RE = re.compile(
     flags=re.UNICODE,
 )
 
+
 def download_bg_image(query: str, out_path: str) -> bool:
     try:
         url = f"https://source.unsplash.com/1080x1920/?{requests.utils.quote(query)}"
