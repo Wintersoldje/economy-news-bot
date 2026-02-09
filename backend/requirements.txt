@@ -6,3 +6,4 @@ edge-tts
 requests
 beautifulsoup4
 lxml
+eq=brightness=-0.12
